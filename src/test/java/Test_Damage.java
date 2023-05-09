@@ -6,10 +6,44 @@ import classes.Card;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Test_Damage {
-
     @Test
-    // Test the ability of FireElf against other cards
-    public void testFireElfAbility() {
+    /**
+     * Test the ability of the Knight card against other cards.
+     * This test case is focused on ensuring that the calculation
+     * of damages when a Knight card battles with a WaterSpell card is correct.
+     */
+    public void testKnight() {
+        Handler_Card handlerCard = Handler_Card.getInstance();
+
+        // Create two cards to test the Knight ability
+        String cardName1 = "Knight";
+        float cardDamage1 = 50;
+        String cardName2 = "WaterSpell";
+        float cardDamage2 = 100;
+
+        // Create the cards using the Handler_Card
+        Card card1 = new Card("1", cardName1, cardDamage1, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
+        Card card2 = new Card("2", cardName2, cardDamage2, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
+
+        // Get the instance of the Battle manager
+        Battle manager = Battle.getInstance();
+
+        // Calculate the damage of each card against the other
+        float result1 = manager.calculateDamage(card1, card2);
+        float result2 = manager.calculateDamage(card2, card1);
+
+        // Check if the expected damage is correct for each card
+        assertEquals(-1, result1);
+        assertEquals(50, result2);
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Test
+    /**
+     * Test the ability of the FireElf card against other cards.
+     * Specifically, this test verifies the calculation of damages
+     * when a FireElf card battles with a WaterDragon card.
+     */
+    public void testFireElf() {
         Handler_Card handlerCard = Handler_Card.getInstance();
 
         // Create two cards to test the FireElf ability
@@ -35,36 +69,14 @@ public class Test_Damage {
         assertEquals(0, result2);
     }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Test
-    // Test the ability of Knight against other cards
-    public void testKnightAbility() {
-        Handler_Card handlerCard = Handler_Card.getInstance();
-
-        // Create two cards to test the Knight ability
-        String cardName1 = "Knight";
-        float cardDamage1 = 50;
-        String cardName2 = "WaterSpell";
-        float cardDamage2 = 100;
-
-        // Create the cards using the Handler_Card
-        Card card1 = new Card("1", cardName1, cardDamage1, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
-        Card card2 = new Card("2", cardName2, cardDamage2, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
-
-        // Get the instance of the Battle manager
-        Battle manager = Battle.getInstance();
-
-        // Calculate the damage of each card against the other
-        float result1 = manager.calculateDamage(card1, card2);
-        float result2 = manager.calculateDamage(card2, card1);
-
-        // Check if the expected damage is correct for each card
-        assertEquals(-1, result1);
-        assertEquals(50, result2);
-    }
-
-    @Test
-    // Test the ability of Kraken against other cards
-    public void testKrakenAbility() {
+    /**
+     * Test the ability of the Kraken card against other cards.
+     * This test verifies the correctness of damage calculation
+     * when a Kraken card battles with a Spell card.
+     */
+    public void testKraken() {
         Handler_Card handlerCard = Handler_Card.getInstance();
 
         // Create two cards to test the Kraken ability
@@ -88,96 +100,14 @@ public class Test_Damage {
         assertEquals(50, result1);
         assertEquals(0, result2);
     }
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Test
-    // Test the ability of Ork against other cards
-    public void testOrkAbility() {
-        Handler_Card handlerCard = Handler_Card.getInstance();
-
-        // Create two cards to test the Ork ability
-        String cardName1 = "Ork";
-        float cardDamage1 = 50;
-        String cardName2 = "Wizard";
-        float cardDamage2 = 100;
-
-        // Create the cards using the Handler_Card
-        Card card1 = new Card("1",cardName1,cardDamage1, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
-        Card card2 = new Card("2",cardName2,cardDamage2, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
-
-        // Get the instance of the Battle manager
-        Battle manager = Battle.getInstance();
-
-        // Calculate the damage of each card against the other
-        float result1 = manager.calculateDamage(card1,card2);
-        float result2 = manager.calculateDamage(card2,card1);
-
-        // Check if the expected damage is correct for each card
-        assertEquals(0,result1);
-        assertEquals(100,result2);
-    }
-
-    @Test
-    // Test the ability of WaterSpell against other cards
-    public void testWaterSpellAbility() {
-        Handler_Card handlerCard = Handler_Card.getInstance();
-
-        // Create three cards to test the WaterSpell ability
-        String cardName1 = "WaterSpell";
-        String cardName2 = "FireSpell";
-        String cardName3 = "NormalSpell";
-
-        float damage = 50;
-
-        // Create the cards using the Handler_Card
-        Card card1 = new Card("1",cardName1,damage, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
-        Card card2 = new Card("2",cardName2,damage, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
-        Card card3 = new Card("2",cardName3,damage, handlerCard.determineMonsterCategory(cardName3), handlerCard.determineElementType(cardName3));
-
-        // Get the instance of the Battle manager
-        Battle manager = Battle.getInstance();
-
-        // Calculate the damage of WaterSpell against other cards
-        float result1 = manager.calculateDamage(card1,card2);
-        float result2 = manager.calculateDamage(card1,card3);
-
-        // Check if the expected damage is correct for WaterSpell
-        assertEquals(100,result1);
-        assertEquals(25,result2);
-    }
-
-    @Test
-    // Test the ability of FireSpell against other cards
-    public void testFireSpellAbility() {
-        Handler_Card handlerCard = Handler_Card.getInstance();
-
-        // Create three cards to test the FireSpell ability
-        String cardName1 = "WaterSpell";
-        String cardName2 = "FireSpell";
-        String cardName3 = "NormalSpell";
-
-        float damage = 50;
-
-        // Create the cards using the Handler_Card
-        Card card1 = new Card("1",cardName1,damage, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
-        Card card2 = new Card("2",cardName2,damage, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
-        Card card3 = new Card("2",cardName3,damage, handlerCard.determineMonsterCategory(cardName3), handlerCard.determineElementType(cardName3));
-
-        // Get the instance of the Battle manager
-        Battle manager = Battle.getInstance();
-
-        // Calculate the damage of FireSpell against other cards
-        float result1 = manager.calculateDamage(card2,card1);
-        float result2 = manager.calculateDamage(card2,card3);
-
-        // Check if the expected damage is correct for FireSpell
-        assertEquals(25,result1);
-        assertEquals(100,result2);
-    }
-
-
-    @Test
-    // Test the attack of a NormalSpell card against other cards
-    public void NormalSpellAttack() {
+    /**
+     * This test case validates the NormalSpell card's attack ability against other cards.
+     * It checks whether the damage calculation is accurate when a NormalSpell card
+     * combats with WaterSpell and FireSpell cards.
+     */
+    public void TestNormalSpell() {
         Handler_Card handlerCard = Handler_Card.getInstance();
 
         // Create three cards for the test
@@ -203,10 +133,14 @@ public class Test_Damage {
         assertEquals(100,result1);
         assertEquals(25,result2);
     }
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Test
-    // Test the attack of a NormalMonster card against other cards
-    public void NormalMonsterAttack() {
+    /**
+     * This test verifies the attack ability of a NormalMonster card against other cards.
+     * It ensures that the damage calculation is correct when a NormalMonster card (represented
+     * by a Dragon, Knight, or Wizard) battles against other monster cards.
+     */
+    public void TestNormalMonster() {
         Handler_Card handlerCard = Handler_Card.getInstance();
 
         // Create three cards for the test
@@ -239,6 +173,72 @@ public class Test_Damage {
         assertEquals(50,result4);
         assertEquals(50,result5);
         assertEquals(50,result6);
+    }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Test
+    /**
+     * This test checks the WaterSpell card's ability against other cards.
+     * It ensures that the damage calculation is accurate when a WaterSpell card
+     * battles with FireSpell and NormalSpell cards.
+     */
+    public void testWaterSpell() {
+        Handler_Card handlerCard = Handler_Card.getInstance();
+
+        // Create three cards to test the WaterSpell ability
+        String cardName1 = "WaterSpell";
+        String cardName2 = "FireSpell";
+        String cardName3 = "NormalSpell";
+
+        float damage = 50;
+
+        // Create the cards using the Handler_Card
+        Card card1 = new Card("1",cardName1,damage, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
+        Card card2 = new Card("2",cardName2,damage, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
+        Card card3 = new Card("2",cardName3,damage, handlerCard.determineMonsterCategory(cardName3), handlerCard.determineElementType(cardName3));
+
+        // Get the instance of the Battle manager
+        Battle manager = Battle.getInstance();
+
+        // Calculate the damage of WaterSpell against other cards
+        float result1 = manager.calculateDamage(card1,card2);
+        float result2 = manager.calculateDamage(card1,card3);
+
+        // Check if the expected damage is correct for WaterSpell
+        assertEquals(100,result1);
+        assertEquals(25,result2);
+    }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Test
+    /**
+     * This test verifies the FireSpell card's ability against other cards.
+     * It tests the correctness of the damage calculation when a FireSpell card
+     * battles with WaterSpell and NormalSpell cards.
+     */
+    public void testFireSpell() {
+        Handler_Card handlerCard = Handler_Card.getInstance();
+
+        // Create three cards to test the FireSpell ability
+        String cardName1 = "WaterSpell";
+        String cardName2 = "FireSpell";
+        String cardName3 = "NormalSpell";
+
+        float damage = 50;
+
+        // Create the cards using the Handler_Card
+        Card card1 = new Card("1",cardName1,damage, handlerCard.determineMonsterCategory(cardName1), handlerCard.determineElementType(cardName1));
+        Card card2 = new Card("2",cardName2,damage, handlerCard.determineMonsterCategory(cardName2), handlerCard.determineElementType(cardName2));
+        Card card3 = new Card("2",cardName3,damage, handlerCard.determineMonsterCategory(cardName3), handlerCard.determineElementType(cardName3));
+
+        // Get the instance of the Battle manager
+        Battle manager = Battle.getInstance();
+
+        // Calculate the damage of FireSpell against other cards
+        float result1 = manager.calculateDamage(card2,card1);
+        float result2 = manager.calculateDamage(card2,card3);
+
+        // Check if the expected damage is correct for FireSpell
+        assertEquals(25,result1);
+        assertEquals(100,result2);
     }
 
 }

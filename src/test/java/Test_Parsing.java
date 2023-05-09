@@ -11,15 +11,14 @@ import static org.junit.Assert.assertEquals;
 
 public class Test_Parsing {
 
-
     /**
-     * Test case for the processing and extraction of HttpRequestContext from a given input.
+     * This is a unit test case to validate the functionality of HttpRequestContext extraction and processing from an input.
      */
 
     @Test
-    void processRequest() {
-        // Create a sample HTTP request string
-        String httpRequestStr = "GET /messages/cards HTTP/1.1\r\n" +
+    void httpRequestExtraction() {
+        // Construct a representative HTTP request as a string
+        String exampleHTTPRequest = "GET /messages/cards HTTP/1.1\r\n" +
                 "Host: localhost\r\n" +
                 "Key: value\r\n" +
                 "Content-Type: application/json\r\n" +
@@ -27,27 +26,28 @@ public class Test_Parsing {
                 "\r\n" +
                 "{id:123}";
 
-        // Initialize a BufferedReader with the sample HTTP request string
-        BufferedReader inputReader = new BufferedReader(new StringReader(httpRequestStr));
+        // Establish a BufferedReader linked to the sample HTTP request string
+        BufferedReader readerForInput = new BufferedReader(new StringReader(exampleHTTPRequest));
 
-        // Create an expected headers map
-        Map<String, String> expectedHeaders = new HashMap<>();
-        expectedHeaders.put("host:", "localhost");
-        expectedHeaders.put("key:", "value");
-        expectedHeaders.put("content-type:", "application/json");
-        expectedHeaders.put("content-length:", "8");
+        // Assemble a map of the headers we expect to find in this request
+        Map<String, String> anticipatedHeaders = new HashMap<>();
+        anticipatedHeaders.put("host:", "localhost");
+        anticipatedHeaders.put("key:", "value");
+        anticipatedHeaders.put("content-type:", "application/json");
+        anticipatedHeaders.put("content-length:", "8");
 
-        // Instantiate the RequestInterpreter class with the input reader
-        RequestParser parser = new RequestParser(inputReader);
+        // Generate an instance of RequestParser using the input reader as a parameter
+        RequestParser requestInterpreter = new RequestParser(readerForInput);
 
-        // Interpret and extract the HttpRequestContext from the input
-        HttpRequestContext requestContext = parser.interpretHttpRequest();
+        // Use the parser to interpret the HTTP request and extract the HttpRequestContext
+        HttpRequestContext derivedRequestContext = requestInterpreter.interpretHttpRequest();
 
-        // Validate the extracted HttpRequestContext against the expected values
-        assertEquals("GET", requestContext.getMethod());
-        assertEquals("/messages/cards", requestContext.getResource());
-        assertEquals("HTTP/1.1", requestContext.getVersion());
-        assertEquals(expectedHeaders, requestContext.getHeaders());
-        assertEquals("{id:123}", requestContext.getBody());
+        // Confirm that the extracted HttpRequestContext matches our expectations
+        assertEquals("GET", derivedRequestContext.getMethod());
+        assertEquals("/messages/cards", derivedRequestContext.getResource());
+        assertEquals("HTTP/1.1", derivedRequestContext.getVersion());
+        assertEquals(anticipatedHeaders, derivedRequestContext.getHeaders());
+        assertEquals("{id:123}", derivedRequestContext.getBody());
     }
 }
+

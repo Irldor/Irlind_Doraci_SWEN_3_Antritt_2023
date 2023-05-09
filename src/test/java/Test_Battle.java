@@ -23,7 +23,10 @@ public class Test_Battle {
     // Declare a CardDeck object to be used in test cases
     private CardDeck deck_0;
 
-    // Set up method, runs before each test case
+    /**
+     * The setup method that runs before each test case.
+     * It creates a deck of four identical cards for testing.
+     */
     @BeforeEach
     void setUp() {
         // Create four identical cards for the test deck
@@ -43,8 +46,11 @@ public class Test_Battle {
         // Create a new CardDeck object using the list of cards
         deck_0 = new CardDeck(cards);
     }
-
-    // Test case for the draw() method
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * This test case checks the draw() method in the Battle class.
+     * It verifies that the draw() method is called for both users during a battle.
+     */
     @Test
     public void testDraw() {
         // Get the Battle instance
@@ -61,8 +67,11 @@ public class Test_Battle {
         verify(userA).draw();
         verify(userB).draw();
     }
-
-    // Test case for win() and lose() methods
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * This test case checks the win() and lose() methods in the Battle class.
+     * It verifies that the user with the stronger deck calls win() method and the user with the weaker deck calls lose() method.
+     */
     @Test
     public void testWin() {
         // Get the Battle instance
