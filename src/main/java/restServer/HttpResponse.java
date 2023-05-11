@@ -2,9 +2,7 @@ package restServer;
 
 // Store request context
 // A significantly modified version of the ResponseContext class with added comments
-public class HttpResponseContext {
-
-    // Instance variables to store the HTTP response components
+public class HttpResponse {
     private String httpProtocol;
     private String statusCode;
     private String serverInfo;
@@ -12,27 +10,23 @@ public class HttpResponseContext {
     private int contentSize;
     private String responseBody;
 
-    // Constructor to initialize the HTTP response components
-    public HttpResponseContext(String statusCode) {
-        httpProtocol = "HTTP/1.1";
+    // Constructor initializing with a given status code
+    public HttpResponse(String statusCode) {
+        this.httpProtocol = "HTTP/1.1";
         this.statusCode = statusCode;
-        serverInfo = "mtcg-server";
-        mimeType = "application/json";
-        contentSize = 0;
-        responseBody = "";
+        this.serverInfo = "mtcg-server";
+        this.mimeType = "application/json";
+        this.responseBody = "";
+        this.contentSize = 0;
     }
 
-    // Getter and setter methods for the instance variables
+    // Getter methods for the instance variables
     public String getHttpProtocol() {
         return httpProtocol;
     }
 
     public String getStatusCode() {
         return statusCode;
-    }
-
-    public void setStatusCode(String statusCode) {
-        this.statusCode = statusCode;
     }
 
     public String getServerInfo() {
@@ -43,10 +37,6 @@ public class HttpResponseContext {
         return mimeType;
     }
 
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
     public int getContentSize() {
         return contentSize;
     }
@@ -55,10 +45,21 @@ public class HttpResponseContext {
         return responseBody;
     }
 
-    // Method to set the response body and update the content size
+    // Method to set the status code
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    // Method to set the MIME type
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    // Method to set the response body and automatically update the content size
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
-        contentSize = responseBody.length();
+        this.contentSize = responseBody.length();
     }
 }
+
 

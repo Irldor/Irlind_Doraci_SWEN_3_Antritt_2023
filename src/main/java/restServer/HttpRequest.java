@@ -5,7 +5,7 @@ import java.util.Map;
 
 // Store request context
 // A significantly modified version of the RequestContext class with added comments
-public class HttpRequestContext {
+public class HttpRequest {
 
     // Instance variables to store the HTTP request components
     private String method;
@@ -15,13 +15,13 @@ public class HttpRequestContext {
     private String body;
 
     // Constructor to initialize the headers map
-    public HttpRequestContext() {
-        headers = new HashMap<>();
+    public HttpRequest() {
+        this.headers = new HashMap<>();
     }
 
     // Getter and setter methods for the instance variables
     public String getMethod() {
-        return method;
+        return this.method;
     }
 
     public void setMethod(String method) {
@@ -29,7 +29,7 @@ public class HttpRequestContext {
     }
 
     public String getResource() {
-        return resource;
+        return this.resource;
     }
 
     public void setResource(String resource) {
@@ -37,7 +37,7 @@ public class HttpRequestContext {
     }
 
     public String getVersion() {
-        return version;
+        return this.version;
     }
 
     public void setVersion(String version) {
@@ -45,15 +45,11 @@ public class HttpRequestContext {
     }
 
     public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+        return this.headers;
     }
 
     public String getBody() {
-        return body;
+        return this.body;
     }
 
     public void setBody(String body) {
@@ -62,15 +58,24 @@ public class HttpRequestContext {
 
     // Method to add a key-value pair to the headers map
     public void addHeader(String key, String value) {
-        headers.put(key, value);
+        this.headers.put(key, value);
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
     }
 
     // Method to get the content length from the headers map
     public int contentLength() {
-        if (headers != null && headers.containsKey("content-length:")) {
-            return Integer.parseInt(headers.get("content-length:"));
+        if (this.headers.containsKey("content-length:")) {
+            try {
+                return Integer.parseInt(this.headers.get("content-length:"));
+            } catch (NumberFormatException e) {
+                System.out.println("Content length is not a valid integer");
+            }
         }
         return 0;
     }
 }
+
 

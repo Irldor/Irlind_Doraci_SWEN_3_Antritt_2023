@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import classes.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -16,12 +17,21 @@ public class Test_Battle {
     // Declare mocked User objects to simulate real users in tests
     @Mock
     private User userA;
-
     @Mock
     private User userB;
 
     // Declare a CardDeck object to be used in test cases
     private CardDeck deck_0;
+
+    // Helper method to create a card
+    private Card createCard(String id, String name, int damage, MonsterCategory category, Element element) {
+        return new Card(id, name, damage, category, element);
+    }
+
+    // Helper method to create a deck of cards
+    private CardDeck createDeck(Card... cards) {
+        return new CardDeck(Arrays.asList(cards));
+    }
 
     /**
      * The setup method that runs before each test case.
@@ -29,44 +39,39 @@ public class Test_Battle {
      */
     @BeforeEach
     void setUp() {
-        // Create four identical cards for the test deck
-        Card card1 = new Card ("1","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
-        Card card2 = new Card ("2","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
-        Card card3 = new Card ("3","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
-        Card card4 = new Card ("4","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
+        // Use the helper method to create four identical cards for the test deck
+        Card card1 = createCard("1","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
+        Card card2 = createCard("2","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
+        Card card3 = createCard("3","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
+        Card card4 = createCard("4","Kraken_0",0, MonsterCategory.Kraken, Element.Water);
 
-        // Initialize an ArrayList to hold the cards
-        List<Card> cards = new ArrayList<>();
-        // Add cards to the list
-        cards.add(card1);
-        cards.add(card2);
-        cards.add(card3);
-        cards.add(card4);
-
-        // Create a new CardDeck object using the list of cards
-        deck_0 = new CardDeck(cards);
+        // Use the helper method to create a deck with the four cards
+        deck_0 = createDeck(card1, card2, card3, card4);
     }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /**
-     * This test case checks the draw() method in the Battle class.
-     * It verifies that the draw() method is called for both users during a battle.
-     */
-    @Test
-    public void testDraw() {
-        // Get the Battle instance
-        Battle manager = Battle.getInstance();
 
-        // Set up mocked User object behavior
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Method for setting up a battle
+    private void setupBattle(User userA, User userB, CardDeck deckA, CardDeck deckB) {
+        // Define the behavior of the mocked User objects when the getName method is called
         when(userA.getName()).thenReturn("MockUser_1");
         when(userB.getName()).thenReturn("MockUser_2");
 
-        // Execute a battle using the mocked users and test decks
-        manager.battle(userA,userB,deck_0,deck_0);
+        // Get the singleton instance of the Battle class and execute a battle
+        Battle.getInstance().battle(userA, userB, deckA, deckB);
+    }
 
-        // Verify that both users called the draw() method
+    @Test
+    public void testDraw() {
+        // Arrange: Set up the battle
+        setupBattle(userA, userB, deck_0, deck_0);
+
+        // Assert: Verify that the expected results have occurred
         verify(userA).draw();
         verify(userB).draw();
     }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * This test case checks the win() and lose() methods in the Battle class.

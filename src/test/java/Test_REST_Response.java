@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import classes.User;
 import restServer.ResponseGenerator;
-import restServer.HttpRequestContext;
+import restServer.HttpRequest;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -31,17 +31,17 @@ public class Test_REST_Response {
     @Mock
     BufferedWriter writer;
 
-    HttpRequestContext request;
+    HttpRequest request;
 
     /**
      * Set up the test environment before each test.
-     * This method initializes the HttpRequestContext object
+     * This method initializes the HttpRequest object
      * and sets the headers and body for the request.
      */
     @BeforeEach
     void prepare() {
-        // Initialize the HttpRequestContext object
-        initializeHttpRequestContext();
+        // Initialize the HttpRequest object
+        initializeHttpRequest();
 
         // Set the headers for the HTTP request
         setRequestHeaders();
@@ -51,10 +51,10 @@ public class Test_REST_Response {
     }
 
     /**
-     * Initialize the HttpRequestContext object.
+     * Initialize the HttpRequest object.
      */
-    private void initializeHttpRequestContext() {
-        request = new HttpRequestContext();
+    private void initializeHttpRequest() {
+        request = new HttpRequest();
         request.setVersion("HTTP/1.1");
     }
 
@@ -124,7 +124,7 @@ public class Test_REST_Response {
         responseGenerator.generateResponse(request);
 
         // Verify if the registerUser method is called with the expected parameters
-        verify(handlerUser).registerUser(anyString(), anyString());
+        verify(handlerUser).signUpUser(anyString(), anyString());
 
         // Verify if the flush method of the writer is called
         verify(writer).flush();
@@ -175,7 +175,7 @@ public class Test_REST_Response {
         handler.generateResponse(request);
 
         // Verify if the loginUser method is called with the expected parameters
-        verify(handlerUser).loginUser(anyString(), anyString());
+        verify(handlerUser).UserSignIn(anyString(), anyString());
 
         // Verify if the flush method of the writer is called
         verify(writer).flush();
@@ -225,7 +225,7 @@ public class Test_REST_Response {
         handler.generateResponse(request);
 
         // Verify if the logoutUser method is called with the expected parameters
-        verify(handlerUser).logoutUser(anyString(), anyString());
+        verify(handlerUser).SignOutUser(anyString(), anyString());
 
         // Verify if the flush method of the writer is called
         verify(writer).flush();
@@ -258,7 +258,7 @@ public class Test_REST_Response {
         mockedHandlerUser.when(Handler_User::getInstance).thenReturn(handlerUser);
 
         // Set up the user authorization
-        when(handlerUser.authorizeUser(anyString())).thenReturn(user);
+        when(handlerUser.authorize(anyString())).thenReturn(user);
         when(user.getUsername()).thenReturn("kienboec");
 
         // Set request method, resource, and body
@@ -279,7 +279,7 @@ public class Test_REST_Response {
         handler.generateResponse(request);
 
         // Verify if the setUserInfo method is called with the expected parameters
-        verify(user).setUserInfo(anyString(), anyString(), anyString());
+        verify(user).updateInfo(anyString(), anyString(), anyString());
 
         // Verify if the flush method of the writer is called
         verify(writer).flush();
@@ -312,7 +312,7 @@ public class Test_REST_Response {
         mockedHandlerUser.when(Handler_User::getInstance).thenReturn(handlerUser);
 
         // Set up the user authorization
-        when(handlerUser.authorizeUser(anyString())).thenReturn(user);
+        when(handlerUser.authorize(anyString())).thenReturn(user);
         when(user.getUsername()).thenReturn("altenhof");
 
         // Set request method, resource, and body
@@ -333,7 +333,7 @@ public class Test_REST_Response {
         handler.generateResponse(request);
 
         // Verify if the setUserInfo method is not called
-        verify(user, times(0)).setUserInfo(anyString(), anyString(), anyString());
+        verify(user, times(0)).updateInfo(anyString(), anyString(), anyString());
 
         // Verify if the flush method of the writer is called
         verify(writer).flush();
@@ -370,8 +370,8 @@ public class Test_REST_Response {
         mockedHandlerCard.when(Handler_Card::getInstance).thenReturn(handlerCard);
 
         // Set up admin and card registration
-        when(handlerUser.isAdmin(anyString())).thenReturn(true);
-        when(handlerCard.registerCard(anyString(), anyString(), anyFloat())).thenReturn(true);
+        when(handlerUser.roleVerification(anyString())).thenReturn(true);
+        when(handlerCard.logCard(anyString(), anyString(), anyFloat())).thenReturn(true);
         when(handlerCard.createCardPackage(anyList())).thenReturn(true);
 
         // Set request method, resource, and body
@@ -392,7 +392,7 @@ public class Test_REST_Response {
         handler.generateResponse(request);
 
         // Verify if the registerCard method is called 5 times
-        verify(handlerCard, times(5)).registerCard(anyString(), anyString(), anyFloat());
+        verify(handlerCard, times(5)).logCard(anyString(), anyString(), anyFloat());
 
         // Verify if the createCardPackage method is called
         verify(handlerCard).createCardPackage(anyList());

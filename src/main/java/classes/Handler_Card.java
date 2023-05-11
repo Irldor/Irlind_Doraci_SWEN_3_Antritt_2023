@@ -10,15 +10,24 @@ import java.util.*;
 
 public class Handler_Card {
 
+    // Singleton instance of the class
     private static Handler_Card single_instance = null;
 
-    public static Handler_Card getInstance()
-    {
+    // Method to get the singleton instance
+    public static Handler_Card getInstance() {
         if (single_instance == null) {
-            single_instance = new Handler_Card();
+            // Synchronizing on Handler_Card.class to make sure only one thread can instantiate the object
+            synchronized (Handler_Card.class) {
+                if (single_instance == null) {// Second check in case another thread entered the synchronized block before this one
+                    single_instance = new Handler_Card();// If the instance is still null, instantiate it
+
+                }
+            }
         }
+        // Return the instance
         return single_instance;
     }
+
 
     // This method creates a package of cards, ensuring that each card is available and
 // not in any collection. It returns true if the package is created successfully and
@@ -103,7 +112,7 @@ public class Handler_Card {
 
     // This method retrieves the user's deck of cards and returns them as a JSON string.
 // If an error occurs, it returns null.
-    public String showUserDeck(User user) {
+    public String showDeck(User user) {
         try (Connection conn = DB.getInstance().getConnection()) {
             // Prepare the query to select the user's deck of cards
             String query = "SELECT cardid, name, damage FROM cards WHERE owner = ? AND collection = 'deck';";
@@ -139,6 +148,7 @@ public class Handler_Card {
         return gson.toJson(cards);
     }
 
+
     public boolean assignPackageToUser(User user) {
         // Establish a database connection
         try (Connection conn = DB.getInstance().getConnection()) {
@@ -152,7 +162,7 @@ public class Handler_Card {
             }
 
             // Attempt to purchase the package, return false if the user does not have enough coins
-            if (!user.buyPackage()) {
+            if (!user.purchasePackage()) {
                 return false;
             }
 
@@ -233,30 +243,31 @@ public class Handler_Card {
         // Convert the input string to lowercase for case-insensitive comparisons
         String lowerCaseName = name.toLowerCase();
 
-        // Check if the name contains any of the specific monster categories and return the corresponding MonsterCategory enum
-        if (lowerCaseName.contains("spell")) {
-            return MonsterCategory.Spell;
-        } else if (lowerCaseName.contains("dragon")) {
-            return MonsterCategory.Dragon;
-        } else if (lowerCaseName.contains("fireelf")) {
-            return MonsterCategory.FireElf;
-        } else if (lowerCaseName.contains("goblin")) {
-            return MonsterCategory.Goblin;
-        } else if (lowerCaseName.contains("knight")) {
-            return MonsterCategory.Knight;
-        } else if (lowerCaseName.contains("kraken")) {
-            return MonsterCategory.Kraken;
-        } else if (lowerCaseName.contains("ork")) {
-            return MonsterCategory.Ork;
-        } else if (lowerCaseName.contains("wizard")) {
-            return MonsterCategory.Wizard;
+        // Create a map of monster names to their corresponding MonsterCategory
+        Map<String, MonsterCategory> monsterCategories = new HashMap<>();
+        monsterCategories.put("spell", MonsterCategory.Spell);
+        monsterCategories.put("dragon", MonsterCategory.Dragon);
+        monsterCategories.put("fireelf", MonsterCategory.FireElf);
+        monsterCategories.put("goblin", MonsterCategory.Goblin);
+        monsterCategories.put("knight", MonsterCategory.Knight);
+        monsterCategories.put("kraken", MonsterCategory.Kraken);
+        monsterCategories.put("ork", MonsterCategory.Ork);
+        monsterCategories.put("wizard", MonsterCategory.Wizard);
+
+        // Iterate over the map and return the corresponding MonsterCategory if the name contains the key
+        for (Map.Entry<String, MonsterCategory> entry : monsterCategories.entrySet()) {
+            if (lowerCaseName.contains(entry.getKey())) {
+                return entry.getValue();
+            }
         }
 
         // Return null if none of the specific monster categories match
         return null;
     }
 
+
     public CardDeck getUserDeck(User user) {
+
         CardDeck deck = null;
 
         // Establish a database connection
@@ -273,8 +284,7 @@ public class Handler_Card {
                 // Loop through the result set and create Card objects, adding them to the list
                 while (rs.next()) {
                     String name = rs.getString(2);
-                    Card card = new Card(rs.getString(1), name, rs.getFloat(3),
-                            determineMonsterCategory(name), determineElementType(name));
+                    Card card = new Card(rs.getString(1), name, rs.getFloat(3), determineMonsterCategory(name), determineElementType(name));
                     cards.add(card);
                 }
 
@@ -290,46 +300,30 @@ public class Handler_Card {
         return deck;
     }
 
-    public boolean registerCard(String id, String name, float damage) {
-        // Check if the provided id and name are not empty
-        if (!id.isEmpty() && !name.isEmpty()) {
-            // Determine the card's element and monster category based on its name
-            Element element = determineElementType(name);
-            MonsterCategory cardType = determineMonsterCategory(name);
-
-            // Check if the card has a valid element and monster category
-            if (element != null && cardType != null) {
-                // Establish a database connection
-                try (Connection conn = DB.getInstance().getConnection()) {
-                    // Prepare a query to insert a new card into the cards table
-                    String query = "INSERT INTO cards(cardid, name, damage) VALUES(?,?,?);";
-                    try (PreparedStatement ps = conn.prepareStatement(query)) {
-                        ps.setString(1, id);
-                        ps.setString(2, name);
-                        ps.setFloat(3, damage);
-
-                        // Execute the query and check the number of affected rows
-                        int affectedRows = ps.executeUpdate();
-
-                        // If no rows were affected, the card registration was unsuccessful
-                        if (affectedRows == 0) {
-                            return false;
-                        }
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                // Card registration was successful
-                return true;
-            }
+    public boolean logCard(String id, String name, float damage) {
+        // Ensure that the provided id and name are not empty, and the card has a valid element and monster category
+        if (id.isEmpty() || name.isEmpty() || determineElementType(name) == null || determineMonsterCategory(name) == null) {
+            return false;
         }
-        // Card registration was unsuccessful due to empty id or name, or invalid element or monster category
-        return false;
+
+        // Attempt to establish a database connection and insert a new card into the cards table
+        try (Connection conn = DB.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement("INSERT INTO cards(cardid, name, damage) VALUES(?,?,?)")) {
+            ps.setString(1, id);
+            ps.setString(2, name);
+            ps.setFloat(3, damage);
+
+            // Check if the card registration was successful
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
-    public void deleteCard(String id) {
+
+    public void removeCard(String id) {
         // Establish a database connection
         try (Connection conn = DB.getInstance().getConnection()) {
             // Prepare a query to delete a card from the cards table where the card id matches the provided id
@@ -346,7 +340,7 @@ public class Handler_Card {
         }
     }
 
-    public boolean createDeck(User user, List<String> ids) {
+    public boolean generateDeck(User user, List<String> ids) {
         // Check if the provided list of card IDs has the correct size for a deck
         if (ids.size() != 4) {
             return false;
@@ -372,7 +366,7 @@ public class Handler_Card {
             List<String> uniqueIds = new LinkedList<>();
 
             for (String cardID : ids) {
-                if (uniqueIds.contains(cardID) || Trading.getInstance().marketplaceContains(cardID)) {
+                if (uniqueIds.contains(cardID) || Trading.getInstance().checkMarketplaceFor(cardID)) {
                     return false;
                 }
                 uniqueIds.add(cardID);

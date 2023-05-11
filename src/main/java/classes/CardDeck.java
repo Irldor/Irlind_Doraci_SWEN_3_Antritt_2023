@@ -2,6 +2,9 @@ package classes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a deck object that contains a collection of card objects.
@@ -19,22 +22,10 @@ public class CardDeck {
      * @param initialCards a list of cards to initialize the deck
      */
     public CardDeck(List<Card> initialCards) {
-        if (initialCards != null) {
-            for (int i = 0; initialCards.size() > i && i < 4; i++) {
-                this.cardList.add(initialCards.get(i));
-            }
-        }
-    }
-
-    /**
-     * Removes a card from the deck.
-     *
-     * @param card the card object to be removed
-     */
-    public void deleteCard(Card card) {
-        if (cardList != null) {
-            cardList.remove(card);
-        }
+        if (initialCards == null) return;
+        this.cardList.addAll(initialCards.stream()
+                .limit(4)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -43,22 +34,36 @@ public class CardDeck {
      * @param card the card object to be added
      */
     public void insertCard(Card card) {
-        if (!cardList.contains(card)) {
-            cardList.add(card);
-        }
+        cardList.stream()
+                .filter(cardItem -> cardItem.equals(card))
+                .findFirst()
+                .ifPresentOrElse(
+                        existingCard -> {},
+                        () -> cardList.add(card)
+                );
     }
+
+
+
+    public void deleteCard(Card card) {
+        //për të trajtuar mundësinë e cardList që të jetë null. Nëse cardList nuk është null,
+        // ifPresent() ekzekuton funksionin lambda, që heq kartën nga lista.
+        Optional.ofNullable(cardList).ifPresent(list -> list.remove(card));
+    }
+
+
 
     /**
      * Retrieves a random card from the deck.
      *
      * @return a random card object or null if the deck is empty
      */
+
     public Card pickRandomCard() {
-        if (cardList != null && cardList.size() > 0) {
-            return cardList.get((int) (Math.random() * cardList.size()));
-        }
-        return null;
+        return (cardList == null || cardList.isEmpty()) ? null :
+                cardList.get(ThreadLocalRandom.current().nextInt(cardList.size()));
     }
+
 
     /**
      * Checks if the deck is empty.
@@ -66,6 +71,7 @@ public class CardDeck {
      * @return true if the deck is empty, false otherwise
      */
     public boolean isDeckEmpty() {
+
         return cardList.isEmpty();
     }
 
@@ -75,11 +81,9 @@ public class CardDeck {
      * @return the number of cards in the deck or 0 if the deck is empty
      */
     public int getDeckSize() {
-        if (!isDeckEmpty()) {
-            return cardList.size();
-        }
-        return 0;
+        return (cardList == null || cardList.isEmpty()) ? 0 : cardList.size();
     }
+
 }
 
 

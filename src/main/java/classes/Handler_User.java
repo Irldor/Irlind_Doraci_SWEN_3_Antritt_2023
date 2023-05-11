@@ -7,17 +7,29 @@ import java.sql.SQLException;
 
 public class Handler_User {
 
+    // Singleton instance of the class
     private static Handler_User single_instance = null;
 
-    public static Handler_User getInstance()
-    {
+
+    // Method to get the singleton instance
+    public static Handler_User getInstance() {
+        // First check to avoid entering the synchronized block unnecessarily
         if (single_instance == null) {
-            single_instance = new Handler_User();
+            // Synchronizing on Handler_User.class to make sure only one thread can instantiate the object
+            synchronized (Handler_User.class) {
+                // Second check in case another thread entered the synchronized block before this one
+                if (single_instance == null) {
+                    // If the instance is still null, instantiate it
+                    single_instance = new Handler_User();
+                }
+            }
         }
+        // Return the instance
         return single_instance;
     }
 
-    public User authorizeUser(String token) {
+
+    public User authorize(String token) {
         // Initialize the user object as null
         User user = null;
 
@@ -61,8 +73,8 @@ public class Handler_User {
         return new User(username, name, bio, image, coins, games, wins, elo);
     }
 
-
-    public boolean isAdmin(String token) {
+// this method tells us if the user is administrator
+    public boolean roleVerification(String token) {
         // Initialize the admin flag as false
         boolean admin = false;
 
@@ -91,14 +103,14 @@ public class Handler_User {
         return admin;
     }
 
-    public boolean registerUser(String username, String password) {
-        System.out.println("Registration initiated");
+    public boolean signUpUser(String username, String password) {
+        System.out.println("User Sign Up started");
         String token = "Basic " + username + "-mtcgToken";
 
         try (Connection conn = DB.getInstance().getConnection()) {
             // Check if the user already exists
             if (userExists(conn, username)) {
-                System.out.println("User already exists!");
+                System.out.println("User is already registered!");
                 return false;
             }
 
@@ -142,9 +154,10 @@ public class Handler_User {
     }
 
     //Method to log in a user with a username and password
-    public boolean loginUser(String username, String password) {
+    public boolean UserSignIn(String username, String password) {
         String query = "UPDATE users SET islogged = TRUE WHERE username = ? AND password = ?;";
 
+        // SQL query that sets 'islogged' to TRUE for the specified user
         try (Connection conn = DB.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
@@ -152,11 +165,13 @@ public class Handler_User {
             ps.setString(2, password);
             int affectedRows = ps.executeUpdate();
 
+            // If one row was affected, the login was successful
             if (affectedRows == 1) {
                 System.out.println("User logged in " + username);
                 return true;
             }
         } catch (SQLException e) {
+            // If an SQL exception occurred, print the stack trace and return false
             e.printStackTrace();
             return false;
         }
@@ -165,7 +180,7 @@ public class Handler_User {
     }
 
     //Method to log out a user with a username and password
-    public boolean logoutUser(String username, String password) {
+    public boolean SignOutUser(String username, String password) {
         String query = "UPDATE users SET islogged = FALSE WHERE username = ? AND password = ?;";
 
         try (Connection conn = DB.getInstance().getConnection();
@@ -185,5 +200,7 @@ public class Handler_User {
 
         return false;
     }
+
+
 
 }

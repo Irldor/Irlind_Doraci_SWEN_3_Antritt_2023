@@ -39,6 +39,11 @@ public class Battle {
         return single_instance;
     }
 
+    /**
+     * This method initiates a battle between two users.
+     * @param newUser User to be registered and battle.
+     * @return Result of the battle.
+     */
     // Method to register a user for a battle and return the battle results
     public String registerAndBattleUser(User newUser) {
         // Register the first user and set isBusy to true
@@ -54,7 +59,7 @@ public class Battle {
                         // Wait for the battle to finish
                         LOCK_OBJECT.wait();
                     } catch (InterruptedException ie) {
-                        // Treat an interrupt as an exit request
+                        // Ktu sigurohet trajtimi i një ndërprerjeje si kërkesë për dalje.
                         break;
                     }
                 }
@@ -74,66 +79,90 @@ public class Battle {
             synchronized (LOCK_OBJECT) {
                 LOCK_OBJECT.notifyAll();
             }
+            // user i par esht null
             firstUser = null;
+            // user i dyte esht null
             secondUser = null;
+            // dhe return qe nxjerr rezultatet e ndeshjes
             return battleResult;
         }
+        // dhe nfund del return i barabarte me null
         return null;
     }
 
-    // Method to conduct a battle between two users
+    /**
+     * This method conducts a battle between two users.
+     * @param player1 First user in the battle.
+     * @param player2 Second user in the battle.
+     * @param player1Deck CardDeck of the first user.
+     * @param player2Deck CardDeck of the second user.
+     * @return Battle log as a JSON string.
+     */
     public String battle(User player1, User player2, CardDeck player1Deck, CardDeck player2Deck) {
-        // Check if the parameters are valid
-        if (player1 == null || player2 == null || player1Deck == null || player2Deck == null) {
-            this.firstUser = null;
-            this.secondUser = null;
-            this.battleResult = null;
-            return null;
-        }
+        // Initialize battle log to null
+        String battleLog = null;
 
-        int roundCounter = 0;
-        try {
+        // Validate parameters
+        if (player1 != null && player2 != null && player1Deck != null && player2Deck != null) {
             // Initialize ObjectMapper for JSON processing
             ObjectMapper objectMapper = new ObjectMapper();
             ArrayNode battleLogArray = objectMapper.createArrayNode();
+            int roundCounter = 0;
 
             // Run rounds until a user runs out of cards or roundCounter reaches 100
-            while (!player1Deck.isDeckEmpty() && !player2Deck.isDeckEmpty() && ++roundCounter <= 100) {
-                ObjectNode roundLog = createRoundLog(objectMapper, player1, player2, player1Deck, player2Deck, roundCounter);
+            do {
+                ObjectNode roundLog = createRoundLog(objectMapper, player1, player2, player1Deck, player2Deck, ++roundCounter);
                 battleLogArray.add(roundLog);
-            }
+            } while (!player1Deck.isDeckEmpty() && !player2Deck.isDeckEmpty() && roundCounter < 100);
 
-            // Convert the battle log to a JSON string
-            String battleLog = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(battleLogArray);
-            // Update the users' records based on the battle outcome
-            updateUsersAfterBattle(player1, player2, player1Deck, player2Deck);
-            return battleLog;
-
-        } catch (JsonProcessingException e) {
-            {
+            try {
+                // Convert the battle log to a JSON string
+                battleLog = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(battleLogArray);
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            return null;
+
+            // Update the users' records based on the battle outcome
+            updateUsersAfterBattle(player1, player2, player1Deck, player2Deck);
         }
+
+        // Reset users and battle result
+        this.firstUser = null;
+        this.secondUser = null;
+        this.battleResult = null;
+
+        return battleLog;
     }
+
+
+    // Method to conduct a battle between two users
+
 
 // Method to create a round log entry for the battle
         private ObjectNode createRoundLog (ObjectMapper objectMapper, User player1, User player2, CardDeck
         player1Deck, CardDeck player2Deck,int roundCounter){
+
+            // Create an ObjectNode to store round log details
             ObjectNode roundLog = objectMapper.createObjectNode();
+
+            // Select a random card from each player's deck
             Card card1 = player1Deck.pickRandomCard();
             Card card2 = player2Deck.pickRandomCard();
-            float card1Damage = calculateDamage(card1, card2);
-            float card2Damage = calculateDamage(card2, card1);
+
+            // Calculate the damage each card can do to the other
+            float card1Damage = damage(card1, card2);
+            float card2Damage = damage(card2, card1);
 
             // Log round details in the round log
             logRoundDetails(roundLog, player1, player2, player1Deck, player2Deck, card1, card2, card1Damage, card2Damage, roundCounter);
             // Process the round outcome and update the card decks accordingly
             processRoundOutcome(player1Deck, player2Deck, card1, card2, card1Damage, card2Damage, roundLog);
 
+            // Log the remaining size of each player's deck after the round
             roundLog.put("Deck Size 1 After", player1Deck.getDeckSize());
             roundLog.put("Deck Size 2 After", player2Deck.getDeckSize());
 
+            // Return the populated round log
             return roundLog;
         }
 
@@ -158,10 +187,13 @@ public class Battle {
         float card1Damage, float card2Damage, ObjectNode roundLog){
             // Determine the winner of the round and update the card decks accordingly
             if (card1Damage > card2Damage) {
+                // If card1's damage is greater, player1 is the winner of the round
                 player2Deck.deleteCard(card2);
                 player1Deck.insertCard(card2);
+                // Log the winner's name in the round log
                 roundLog.put("Winner: ", firstUser.getName());
             } else if (card1Damage < card2Damage) {
+                // If card2's damage is greater, player2 is the winner of the round
                 player1Deck.deleteCard(card1);
                 player2Deck.insertCard(card1);
                 roundLog.put("Winner: ", secondUser.getName());
@@ -172,9 +204,11 @@ public class Battle {
 
 // Method to update users' records after the battle
         private void updateUsersAfterBattle (User player1, User player2, CardDeck player1Deck, CardDeck player2Deck){
+            // Compare the size of the decks after the battle
             if (player1Deck.getDeckSize() > player2Deck.getDeckSize()) {
                 player1.lose();
                 player2.win();
+            // If player2's deck is larger, player2 wins and player1 loses
             } else if (player2Deck.getDeckSize() > player1Deck.getDeckSize()) {
                 player1.win();
                 player2.lose();
@@ -185,7 +219,7 @@ public class Battle {
         }
 
 // Method to calculate damage between two cards
-        public float calculateDamage (Card attacker, Card defender){
+        public float damage (Card attacker, Card defender){
             if (isSpecialDamage(attacker)) {
                 return specialDamage(attacker);
             }
@@ -238,31 +272,44 @@ public class Battle {
 
 // Method to calculate elemental damage between two cards
         private float calculateElementalDamage (Card attacker, Card defender){
+            // Get the base damage of the attacker
             float damage = attacker.getDamage();
+
+            // Get the elemental type of the attacker and defender
             Element attackerElement = attacker.getElementType();
             Element defenderElement = defender.getElementType();
 
+            // Check for element combinations where the attacker has an advantage
+            // If the attacker has the advantage, the damage is doubled
             if (attackerElement == Element.Water && defenderElement == Element.Fire ||
                     attackerElement == Element.Normal && defenderElement == Element.Water ||
                     attackerElement == Element.Fire && defenderElement == Element.Normal) {
                 return damage * 2;
             }
+
+            // Check for element combinations where the defender has an advantage
+            // If the defender has the advantage, the damage is halved
             if (attackerElement == Element.Water && defenderElement == Element.Normal ||
                     attackerElement == Element.Fire && defenderElement == Element.Water ||
                     attackerElement == Element.Normal && defenderElement == Element.Fire) {
                 return damage / 2;
             }
+            // If neither the attacker nor the defender have an elemental advantage, return the base damage
             return damage;
         }
 
 // Method to fetch the scoreboard data
         public String fetchScoreboard () {
             try (Connection connection = DB.getInstance().getConnection()) {
+                // Execute the scoreboard query and get the results as an ArrayNode
                 ArrayNode scoreboardData = executeScoreboardQuery(connection);
+                // Convert the ArrayNode of scoreboard data to a JSON string and return it
                 return convertArrayNodeToJsonString(scoreboardData);
             } catch (SQLException | JsonProcessingException e) {
+                // If a SQLException or JsonProcessingException is thrown, print the stack trace
                 e.printStackTrace();
             }
+            // If an exception was thrown, return null
             return null;
         }
 
@@ -276,12 +323,17 @@ public class Battle {
         }
 // Method to create an array of scoreboard data from the query result set
             private ArrayNode createScoreboardDataArray (ResultSet resultSet) throws SQLException {
+                // Here is created an ObjectMapper, which is used for converting between Java objects and JSON
                 ObjectMapper objectMapper = new ObjectMapper();
+                // Then is created an ArrayNode that holds the scoreboard data
                 ArrayNode scoreboardArray = objectMapper.createArrayNode();
                 while (resultSet.next()) {
+                    // For each row, create a scoreboard entry as an ObjectNode
                     ObjectNode scoreboardEntry = createScoreboardEntry(objectMapper, resultSet);
+                    // Add the scoreboard entry to the ArrayNode
                     scoreboardArray.add(scoreboardEntry);
                 }
+                // Return the ArrayNode of scoreboard data
                 return scoreboardArray;
             }
 
